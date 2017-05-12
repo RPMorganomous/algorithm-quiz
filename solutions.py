@@ -1,8 +1,4 @@
 import itertools # handy for making permutations
-import sys # for passing in arguments from the prompt
-
-s = sys.argv[1] # get the first variable passed in from prompt
-t = sys.argv[2] # get the second variable passed in from prompt
 
 def make_permutations(t):
     # generate all permutations using all characters in the string t
@@ -11,7 +7,7 @@ def make_permutations(t):
 
 def question1(s, t):
     # check to see if any of the permutations of t are found in s
-    tlist = list(t) # brean string t into a list
+    tlist = list(t) # break string t into a list
     anagram = ""
     for i in tlist:
         if i in s:
@@ -27,6 +23,15 @@ def question1(s, t):
             return True
     return False
 
-print(question1(s,t))
+print(question1("udacity", "ad"))
+# True
+print(question1("",""))
+# False
+print(question1("""
+    And upon this act, sincerely believed to be an act of justice, warranted
+    by the Constitution, upon military necessity, I invoke the considerate
+    judgment of mankind, and the gracious favor of Almighty God.
+    ""","Amgtlihy"))
+# True
 
 
