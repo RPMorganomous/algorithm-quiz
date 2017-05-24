@@ -1,40 +1,33 @@
-import itertools # handy for making permutations
-right = 0
+import collections # great for counting characters
+
 # Question 1:
 # Given two strings s and t, determine whether some anagram of t is a
 # substring of s. For example: if s = "udacity" and t = "ad", then the
 # function returns True. Your function definition should look like:
 # question1(s, t) and return a boolean True or False.
 
-def make_permutations(t):
-    # generate all permutations using all characters in the string t
-    perms = [''.join(perm) for perm in itertools.permutations(t)]
-    return perms
-
 def question1(s, t):
-    # check to see if any of the permutations of t are found in s
-    tlist = list(t) # break string t into a list
-    anagram = ""
-    for i in tlist:
-        if i in s:
-            anagram = anagram + i
-    # do not continue unless at least 2 letters of t are found in s
-    if len(anagram) > 1:
-        tPerms = make_permutations(anagram)
-    else:
+    if s and t:
+        count_t = collections.Counter(t)
+        i = 0
+        j = len(t)
+        while i <= (len(s)-j):
+            substring = (s[i:i+j])
+            count_s = collections.Counter(substring)
+            if count_s == count_t:
+                return True
+            i += 1
         return False
-    # test for permutations of t in s - result True on first occurrence
-    for q in tPerms:
-        if q in s:
-            return True
     return False
 
 # Test Cases for Question 1:
 
 print(question1("udacity", "ad"))
 # True
+
 print(question1("",""))
 # False
+
 print(question1("""
     And upon this act, sincerely believed to be an act of justice, warranted
     by the Constitution, upon military necessity, I invoke the considerate
@@ -42,9 +35,14 @@ print(question1("""
     ""","Amgtlihy"))
 # True
 
+print(question1("yticadu", "udacity"))
+# True
+
 # Question 2:
 # Given a string a, find the longest palindromic substring contained in a.
 # Your function definition should look like question2(a), and return a string.
+
+right = 0
 
 def is_palindrome(s):
     return s==s[::-1] # inverts the string and compares to the original
@@ -70,16 +68,18 @@ def find_palindrome(s): # checks for odd palindromes
             right += 1
     return temp
 
-def question2(s):
-    global right
-    right = 3
-    t1 = find_palindrome(s)
-    right = 4
-    t2 = find_palindrome(s)
-    if len(t1) > len(t2):
-        return t1
-    else:
-        return t2
+def question2(s = ""):
+    if s:
+        global right
+        right = 3
+        t1 = find_palindrome(s)
+        right = 4
+        t2 = find_palindrome(s)
+        if len(t1) > len(t2):
+            return t1
+        else:
+            return t2
+    return("Nothing to see here...")
 
 # Test Cases for Question 2:
 
@@ -89,6 +89,10 @@ print(question2("aabaab"))
 #aabaa
 print(question2("hereisareallyyllaerpalindromewithmorethanahterompalindrome"))
 #morethanahterom
+print(question2(""))
+#Nothing to see here...
+print(question2())
+#Nothing to see here...
 
 # Question 3
 # Given an undirected graph G, find the minimum spanning tree within G.
@@ -189,6 +193,7 @@ graph_in = {
 pprint.pprint(question3(graph_in))
 # {'A': [('B', 2)], 'B': [('A', 2), ('C', 5)], 'C': [('B', 5)]}
 
+# Kruskal's Algorithm example case found on wikipedia: https://en.wikipedia.org/wiki/Kruskal%27s_algorithm
 graph_in = {
     'A': [('B', 7), ('D', 5)],
     'B': [('A', 7), ('C', 8), ('D', 9), ('E', 7)],
@@ -237,82 +242,81 @@ pprint.pprint(question3(graph_in))
 #           1,
 #           4)
 
-# define tree classes and helpers
-class Node(object):
-    def __init__(self, value):
-        self.value = value
-        self.left = None
-        self.right = None
-
-class BST(object):
-    def __init__(self, root):
-        self.root = Node(root)
-
-    def insert(self, new_val):
-        self.insert_helper(self.root, new_val)
-
-    def insert_helper(self, current, new_val):
-        if current.value < new_val:
-            if current.right:
-                self.insert_helper(current.right, new_val)
-            else:
-                current.right = Node(new_val)
-        else:
-            if current.left:
-                self.insert_helper(current.left, new_val)
-            else:
-                current.left = Node(new_val)
-
-    def search(self, find_val):
-        return self.search_helper(self.root, find_val)
-
-    def search_helper(self, current, find_val):
-        if current:
-            if current.value == find_val:
-                return True
-            elif current.value < find_val:
-                return self.search_helper(current.right, find_val)
-            else:
-                return self.search_helper(current.left, find_val)
-        return False
-
-# trace tree beginning with the root node
-def find_path(T, r):
-    tree = BST(r)
+def question4(T, r, n1, n2):
+    nx1 = -1
+    nx2 = -1
     for i, j in enumerate(T[r]):
-        if j==1:
-            #print("node ", r, " is parent of node ", i)
-            tree.insert(i)
-            find_path(T, i)
+        if j == 1:
+            if nx1 == -1:
+                nx1 = i
+            else:
+                nx2 = i
 
-# search the tree left and right to find the lowest common ancestor
-def find_lca(r, n1, n2):
+    if r > max(n1, n2):
+        return question4(T, min(nx1, nx2), n1, n2)
 
-    # if n1 and n2 are less than the root, then lca is to the left
-    if (r > n1 and r > n2):
-        print r, n1, n2, r.left
-        return find_lca(r.left, n1, n2)
+    if r < min(n1, n2):
+        return question4(T, max(nx1, nx2), n1, n2)
 
-    # if n1 and n2 are greater than the root, then lca is to the right
-    if (r < n1 and r < n2):
-        return find_lca(r.right, n1, n2)
     return r
 
-def question4(T, r, n1, n2):
-    find_path(T, r)
-    lca = find_lca(r, n1, n2)
-    return lca
 
 print "lca =", question4([
-            [0, 1, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [1, 0, 0, 0, 1],
-            [0, 0, 0, 0, 0]],
-            3,
-            1,
-            4)
+    [0, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [1, 0, 0, 0, 1],
+    [0, 0, 0, 0, 0]],
+    3,
+    1,
+    4)
 # lca = 3
+
+print "lca =", question4([
+    [0, 0, 0, 0, 0],
+    [1, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 1],
+    [0, 0, 0, 0, 0]],
+    3,
+    0,
+    2)
+# lca = 1
+
+print "lca =", question4([
+    [0, 0, 0, 0, 0, 0, 0],
+    [1, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 0, 1, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 1],
+    [0, 0, 0, 0, 0, 0, 0]],
+    3,
+    4,
+    6)
+# lca = 5
+
+try:
+    print "lca = ", question4()
+except:
+    print "Bad Tree"
+# lca = Bad Tree
+
+try:
+    print "lca =", question4([
+    [0, 0, 0, 0, 0, 0, 0],
+    [X, 0, X, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, X, 0, 0, 0, X, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, X, 0, X],
+    [0, 0, 0, 0, 0, 0, 0]],
+    3,
+    4,
+    6)
+except:
+    print "Bad Tree"
+# lca = 5
 
 # Question 5
 # Find the element in a singly linked list that's m elements
@@ -352,14 +356,16 @@ class LinkedList:
         return count
 
 def question5(ll, m):
-    count = ll.getCount()
-    item = ll.head
-    i = 0
-    while (i < (count - m)):
-        i += 1
-        item = item.next
-    return item.data
-
+    if m > 0:
+        count = ll.getCount()
+        item = ll.head
+        i = 0
+        while (i < (count - m)):
+            i += 1
+            item = item.next
+        return item.data
+    else:
+        return ("must be greater than 0")
 # create the linked list
 ll = LinkedList()
 
@@ -371,7 +377,13 @@ print(question5(ll, 3))
 # 3
 
 print(question5(ll, 5))
-#5
+# 5
 
 print(question5(ll, 12))
 # 10
+
+print(question5(ll, 1))
+# 1
+
+print(question5(ll, 0))
+# must be greater than 0
